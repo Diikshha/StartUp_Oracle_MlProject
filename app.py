@@ -33,7 +33,7 @@ app.secret_key = os.environ.get("SECRET_KEY", "startup-predictor-secret-2024")
 
 # ── paths ────────────────────────────────────────────────────────────────────
 BASE_DIR    = os.path.dirname(os.path.abspath(__file__))
-USERS_FILE  = os.path.join(BASE_DIR, "users.json")
+USERS_FILE = os.path.join(BASE_DIR, "data", "users.json")
 HISTORY_CSV = os.path.join(BASE_DIR, "data", "history.csv")
 MODEL_DIR   = os.path.join(BASE_DIR, "model")
 
