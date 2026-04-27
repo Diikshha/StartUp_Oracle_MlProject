@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard · StartupOracle</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Syne:wght@400;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+</head>
+<body class="dashboard-page">
+<div class="nebula n1"></div>
+<div class="nebula n2"></div>
+<div class="grid-overlay"></div>
+
+<!-- NAVBAR -->
+<nav class="navbar glass-card">
+  <a href="{{ url_for('dashboard') }}" class="nav-logo">
+    <svg width="32" height="32" viewBox="0 0 48 48" fill="none">
+      <circle cx="24" cy="24" r="22" stroke="url(#ng1)" stroke-width="2"/>
+      <path d="M14 30L22 18L28 25L34 16" stroke="url(#ng2)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+      <circle cx="34" cy="16" r="3" fill="url(#ng2)"/>
+      <defs>
+        <linearGradient id="ng1" x1="0" y1="0" x2="48" y2="48"><stop stop-color="#7c3aed"/><stop offset="1" stop-color="#06b6d4"/></linearGradient>
+        <linearGradient id="ng2" x1="14" y1="16" x2="34" y2="30"><stop stop-color="#a78bfa"/><stop offset="1" stop-color="#38bdf8"/></linearGradient>
+      </defs>
+    </svg>
+    <span class="nav-brand">StartupOracle</span>
+  </a>
+  <div class="nav-links">
+    <a href="{{ url_for('about') }}" class="nav-link">About</a>
+    <span class="nav-user">👋 {{ username }}</span>
+    <a href="{{ url_for('logout') }}" class="btn btn-sm btn-ghost">Sign Out</a>
+  </div>
+</nav>
+
+<main class="main-content">
+
+  <!-- HERO STRIP -->
+  <div class="hero-strip">
+    <div>
+      <h1 class="page-title">Predict Your <span class="gradient-text">Startup's Future</span></h1>
+      <p class="page-sub">Feed the oracle. Get instant AI-powered success probability.</p>
+    </div>
+    <div class="hero-stats">
+      <div class="stat-pill"><span class="stat-num">{{ history|length }}</span><span class="stat-lbl">Predictions</span></div>
+      {% if history %}
+      <div class="stat-pill">
+        <span class="stat-num">{{ "%.0f"|format(history[0].probability * 100) }}%</span>
+        <span class="stat-lbl">Last Score</span>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="dashboard-grid">
+
+    <!-- LEFT COLUMN -->
+    <div class="col-left">
+
+      <!-- INPUT FORM -->
+      <div class="glass-card card-section">
+        <h2 class="section-title">📊 Input Parameters</h2>
+        <form method="POST" id="predictForm" class="predict-form">
+          <div class="form-group">
+            <label class="form-label">Total Funding (USD)</label>
+            <div class="input-wrapper">
+              <span class="input-icon">💵</span>
+              <input type="number" name="funding_total_usd" class="form-input"
+                     placeholder="e.g. 5000000" min="0" step="1000"
+                     value="{{ input_vals.get('funding_total_usd', '') }}" required>
+            </div>
+            <input type="range" class="slider" id="fundingSlider" min="0" max="50000000" step="100000"
+                   value="{{ input_vals.get('funding_total_usd', 1000000) }}">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Number of Funding Rounds</label>
+            <div class="input-wrapper">
+              <span class="input-icon">🔄</span>
+              <input type="number" name="funding_rounds" class="form-input"
+                     placeholder="e.g. 3" min="0" max="20"
+                     value="{{ input_vals.get('funding_rounds', '') }}" required>
+            </div>
+            <div class="round-pills" id="roundPills">
+              {% for i in range(1, 11) %}
+              <span class="round-pill {% if input_vals.get('funding_rounds')|int == i %}active{% endif %}"
+                    data-val="{{ i }}">{{ i }}</span>
+              {% endfor %}
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Startup Age (years)</label>
+            <div class="input-wrapper">
+              <span class="input-icon">📅</span>
+              <input type="number" name="startup_age" class="form-input"
+                     placeholder="e.g. 3" min="0" max="30" step="0.5"
+                     value="{{ input_vals.get('startup_age', '') }}" required>
+            </div>
+            <input type="range" class="slider" id="ageSlider" min="0" max="15" step="0.5"
+                   value="{{ input_vals.get('startup_age', 2) }}">
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-full btn-glow" id="predictBtn">
+            <span class="btn-content">
+              <span class="btn-icon">🔮</span>
+              <span>Run Prediction</span>
+            </span>
+            <span class="btn-loader" style="display:none">⟳ Analyzing...</span>
+          </button>
+        </form>
+      </div>
+
+      <!-- CSV UPLOAD -->
+      <div class="glass-card card-section">
+        <h2 class="section-title">📁 Bulk Prediction</h2>
+        <p class="section-desc">Upload a CSV with columns: <code>funding_total_usd</code>, <code>funding_rounds</code>, <code>startup_age</code></p>
+        <form method="POST" action="{{ url_for('upload_csv') }}" enctype="multipart/form-data" class="upload-form">
+          <label class="upload-zone" id="uploadZone">
+            <input type="file" name="csv_file" accept=".csv" id="csvFile" style="display:none">
+            <div class="upload-content">
+              <span class="upload-icon">📂</span>
+              <span class="upload-text" id="uploadText">Drop CSV here or click to browse</span>
+            </div>
+          </label>
+          <button type="submit" class="btn btn-secondary btn-full">Download Results CSV</button>
+        </form>
+      </div>
+
+      <!-- HISTORY DOWNLOAD -->
+      <div class="glass-card card-section card-compact">
+        <div class="card-row">
+          <div>
+            <h3 class="section-title-sm">📥 Export My History</h3>
+            <p class="section-desc">Download all your predictions as CSV</p>
+          </div>
+          <a href="{{ url_for('download_history') }}" class="btn btn-ghost btn-sm">Download</a>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- RIGHT COLUMN -->
+    <div class="col-right">
+
+      {% if prediction %}
+      <!-- RESULT CARD -->
+      <div class="glass-card card-section result-card {% if prediction == 'Success' %}result-success{% else %}result-failure{% endif %}">
+        <div class="result-header">
+          <div class="result-verdict">
+            <span class="verdict-icon">{{ '🚀' if prediction == 'Success' else '⚠️' }}</span>
+            <div>
+              <div class="verdict-label">Prediction</div>
+              <div class="verdict-text">{{ prediction }}</div>
+            </div>
+          </div>
+          <div class="probability-ring">
+            <svg viewBox="0 0 80 80">
+              <circle cx="40" cy="40" r="34" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="8"/>
+              <circle cx="40" cy="40" r="34" fill="none"
+                      stroke="{{ '#10b981' if prediction == 'Success' else '#ef4444' }}"
+                      stroke-width="8" stroke-linecap="round"
+                      stroke-dasharray="{{ (probability * 213.6)|round(1) }} 213.6"
+                      stroke-dashoffset="53.4"
+                      class="prob-ring-fill"/>
+              <text x="40" y="45" text-anchor="middle" fill="white" font-size="14" font-weight="bold" font-family="Orbitron">
+                {{ "%.0f"|format(probability * 100) }}%
+              </text>
+            </svg>
+          </div>
+        </div>
+
+        <!-- GAUGE CHART -->
+        <div id="gaugeChart" class="chart-area"></div>
+      </div>
+
+      <!-- INPUT BAR CHART -->
+      <div class="glass-card card-section">
+        <h2 class="section-title">📈 Input Profile</h2>
+        <div id="barChart" class="chart-area"></div>
+      </div>
+
+      <!-- INSIGHTS -->
+      {% if insights %}
+      <div class="glass-card card-section">
+        <h2 class="section-title">💡 Business Insights</h2>
+        <div class="insights-list">
+          {% for icon, title, desc in insights %}
+          <div class="insight-card">
+            <span class="insight-icon">{{ icon }}</span>
+            <div>
+              <div class="insight-title">{{ title }}</div>
+              <div class="insight-desc">{{ desc }}</div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+
+      {% else %}
+      <!-- EMPTY STATE -->
+      <div class="glass-card card-section empty-state">
+        <div class="empty-icon">🔮</div>
+        <h3>Ready to predict</h3>
+        <p>Fill in the parameters and run a prediction to see results, charts, and insights.</p>
+      </div>
+      {% endif %}
+
+      <!-- HISTORY TREND -->
+      {% if history|length > 1 %}
+      <div class="glass-card card-section">
+        <h2 class="section-title">📉 Prediction History</h2>
+        <div id="historyChart" class="chart-area"></div>
+      </div>
+      {% endif %}
+
+      <!-- LEADERBOARD -->
+      <div class="glass-card card-section">
+        <h2 class="section-title">🏆 Top Predictions Leaderboard</h2>
+        <div id="leaderboardContent" class="leaderboard-list">
+          <div class="loading-pulse">Loading leaderboard…</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- HISTORY TABLE -->
+  {% if history %}
+  <div class="glass-card card-section full-width">
+    <h2 class="section-title">🕒 Recent Predictions</h2>
+    <div class="table-wrapper">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Time</th>
+            <th>Funding (USD)</th>
+            <th>Rounds</th>
+            <th>Age (yr)</th>
+            <th>Verdict</th>
+            <th>Probability</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in history[:10] %}
+          <tr class="table-row-anim" style="animation-delay: {{ loop.index0 * 0.05 }}s">
+            <td class="td-muted">{{ row.timestamp }}</td>
+            <td>${{ "{:,.0f}".format(row.funding_total_usd|float) }}</td>
+            <td>{{ row.funding_rounds }}</td>
+            <td>{{ row.startup_age }}</td>
+            <td>
+              <span class="badge {% if row.prediction == 'Success' %}badge-success{% else %}badge-failure{% endif %}">
+                {{ row.prediction }}
+              </span>
+            </td>
+            <td>
+              <div class="prob-bar-wrap">
+                <div class="prob-bar" style="width: {{ (row.probability * 100)|round }}%"></div>
+                <span>{{ "%.1f"|format(row.probability * 100) }}%</span>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  {% endif %}
+
+</main>
+
+<!-- Pass data to JS -->
+<script>
+  const PREDICTION_DATA = {
+    hasPrediction: {{ 'true' if prediction else 'false' }},
+    prediction: "{{ prediction or '' }}",
+    probability: {{ probability or 0 }},
+    inputVals: {
+      funding: {{ input_vals.get('funding_total_usd', 0) }},
+      rounds: {{ input_vals.get('funding_rounds', 0) }},
+      age: {{ input_vals.get('startup_age', 0) }}
+    },
+    history: {{ history|tojson }}
+  };
+</script>
+<script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>

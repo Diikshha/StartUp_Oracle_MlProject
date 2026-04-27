@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Register · StartupOracle</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Syne:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="auth-page">
+<div class="stars"></div>
+<div class="nebula n1"></div>
+<div class="nebula n2"></div>
+
+<div class="auth-container">
+  <div class="auth-card glass-card">
+    <div class="auth-logo">
+      <div class="logo-icon">
+        <svg viewBox="0 0 48 48" fill="none">
+          <circle cx="24" cy="24" r="22" stroke="url(#g1)" stroke-width="2"/>
+          <path d="M14 30L22 18L28 25L34 16" stroke="url(#g2)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <circle cx="34" cy="16" r="3" fill="url(#g2)"/>
+          <defs>
+            <linearGradient id="g1" x1="0" y1="0" x2="48" y2="48">
+              <stop stop-color="#7c3aed"/>
+              <stop offset="1" stop-color="#06b6d4"/>
+            </linearGradient>
+            <linearGradient id="g2" x1="14" y1="16" x2="34" y2="30">
+              <stop stop-color="#a78bfa"/>
+              <stop offset="1" stop-color="#38bdf8"/>
+            </linearGradient>
+          </defs>
+        </svg>
+      </div>
+      <div class="logo-text">
+        <span class="logo-main">StartupOracle</span>
+        <span class="logo-sub">AI Success Predictor</span>
+      </div>
+    </div>
+
+    <h1 class="auth-title">Create account</h1>
+    <p class="auth-subtitle">Join thousands of founders predicting their success</p>
+
+    {% if error %}
+    <div class="alert alert-error">
+      <span class="alert-icon">⚠</span> {{ error }}
+    </div>
+    {% endif %}
+
+    <form method="POST" class="auth-form">
+      <div class="form-group">
+        <label class="form-label">Username</label>
+        <div class="input-wrapper">
+          <span class="input-icon">👤</span>
+          <input type="text" name="username" class="form-input" placeholder="Choose a username" required autocomplete="username">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <div class="input-wrapper">
+          <span class="input-icon">🔒</span>
+          <input type="password" name="password" class="form-input" placeholder="Create a password" required autocomplete="new-password" id="pw1">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Confirm Password</label>
+        <div class="input-wrapper">
+          <span class="input-icon">✅</span>
+          <input type="password" name="confirm" class="form-input" placeholder="Confirm your password" required autocomplete="new-password" id="pw2">
+        </div>
+      </div>
+      <div class="strength-bar" id="strengthBar">
+        <div class="strength-fill" id="strengthFill"></div>
+      </div>
+      <button type="submit" class="btn btn-primary btn-full">
+        <span>Create Account</span>
+        <span class="btn-arrow">→</span>
+      </button>
+    </form>
+
+    <p class="auth-switch">
+      Already have an account? <a href="{{ url_for('login') }}" class="link-accent">Sign in →</a>
+    </p>
+  </div>
+</div>
+<script src="{{ url_for('static', filename='script.js') }}"></script>
+<script>
+  const pw1 = document.getElementById('pw1');
+  const fill = document.getElementById('strengthFill');
+  pw1.addEventListener('input', () => {
+    const v = pw1.value;
+    let s = 0;
+    if (v.length >= 6) s++;
+    if (v.length >= 10) s++;
+    if (/[A-Z]/.test(v)) s++;
+    if (/[0-9]/.test(v)) s++;
+    if (/[^a-zA-Z0-9]/.test(v)) s++;
+    const colors = ['#ef4444','#f97316','#eab308','#22c55e','#10b981'];
+    fill.style.width = (s / 5 * 100) + '%';
+    fill.style.background = colors[s - 1] || '#ef4444';
+  });
+</script>
+</body>
+</html>

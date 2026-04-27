@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>About · StartupOracle</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Syne:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="dashboard-page">
+<div class="nebula n1"></div>
+<div class="nebula n2"></div>
+<div class="grid-overlay"></div>
+
+<nav class="navbar glass-card">
+  <a href="{{ url_for('dashboard') if logged_in else url_for('login') }}" class="nav-logo">
+    <svg width="32" height="32" viewBox="0 0 48 48" fill="none">
+      <circle cx="24" cy="24" r="22" stroke="url(#ng1)" stroke-width="2"/>
+      <path d="M14 30L22 18L28 25L34 16" stroke="url(#ng2)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+      <circle cx="34" cy="16" r="3" fill="url(#ng2)"/>
+      <defs>
+        <linearGradient id="ng1" x1="0" y1="0" x2="48" y2="48"><stop stop-color="#7c3aed"/><stop offset="1" stop-color="#06b6d4"/></linearGradient>
+        <linearGradient id="ng2" x1="14" y1="16" x2="34" y2="30"><stop stop-color="#a78bfa"/><stop offset="1" stop-color="#38bdf8"/></linearGradient>
+      </defs>
+    </svg>
+    <span class="nav-brand">StartupOracle</span>
+  </a>
+  <div class="nav-links">
+    {% if logged_in %}
+    <a href="{{ url_for('dashboard') }}" class="nav-link">Dashboard</a>
+    <span class="nav-user">👋 {{ username }}</span>
+    <a href="{{ url_for('logout') }}" class="btn btn-sm btn-ghost">Sign Out</a>
+    {% else %}
+    <a href="{{ url_for('login') }}" class="btn btn-sm btn-primary">Sign In</a>
+    {% endif %}
+  </div>
+</nav>
+
+<main class="main-content about-content">
+
+  <div class="about-hero">
+    <div class="about-glow"></div>
+    <div class="about-hero-inner">
+      <div class="about-badge">About StartupOracle</div>
+      <h1 class="about-title">The <span class="gradient-text">AI Oracle</span><br>for Founders</h1>
+      <p class="about-lead">
+        StartupOracle uses machine learning trained on thousands of real-world startup outcomes to give you a statistically grounded probability of success — instantly.
+      </p>
+    </div>
+  </div>
+
+  <div class="about-grid">
+
+    <div class="glass-card card-section about-card">
+      <div class="about-card-icon">🧠</div>
+      <h3>How the Model Works</h3>
+      <p>Our ML pipeline is trained on historical startup data from Crunchbase and CB Insights. It learns patterns from funding amounts, round frequencies, and company age to predict success probability with calibrated confidence scores.</p>
+    </div>
+
+    <div class="glass-card card-section about-card">
+      <div class="about-card-icon">📊</div>
+      <h3>Key Features</h3>
+      <ul class="feature-list">
+        <li>✅ Real-time success probability</li>
+        <li>✅ Business insights per prediction</li>
+        <li>✅ Bulk CSV prediction upload</li>
+        <li>✅ Personal prediction history</li>
+        <li>✅ Community leaderboard</li>
+        <li>✅ Trend charts over time</li>
+      </ul>
+    </div>
+
+    <div class="glass-card card-section about-card">
+      <div class="about-card-icon">⚙️</div>
+      <h3>Tech Stack</h3>
+      <div class="tech-pills">
+        <span class="tech-pill">Python / Flask</span>
+        <span class="tech-pill">scikit-learn</span>
+        <span class="tech-pill">pandas / NumPy</span>
+        <span class="tech-pill">Plotly.js</span>
+        <span class="tech-pill">Glassmorphism UI</span>
+        <span class="tech-pill">CSS Animations</span>
+      </div>
+    </div>
+
+    <div class="glass-card card-section about-card">
+      <div class="about-card-icon">📐</div>
+      <h3>Input Variables</h3>
+      <div class="var-list">
+        <div class="var-item">
+          <span class="var-name">funding_total_usd</span>
+          <span class="var-desc">Total capital raised across all rounds</span>
+        </div>
+        <div class="var-item">
+          <span class="var-name">funding_rounds</span>
+          <span class="var-desc">Number of distinct funding events</span>
+        </div>
+        <div class="var-item">
+          <span class="var-name">startup_age</span>
+          <span class="var-desc">Years since company founding</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="glass-card card-section about-card about-card-wide">
+      <div class="about-card-icon">⚠️</div>
+      <h3>Disclaimer</h3>
+      <p>StartupOracle is an educational and analytical tool. Predictions are probabilistic estimates based on historical patterns and <strong>should not be treated as financial advice</strong>. Startup success depends on countless factors beyond the scope of any model — team, market timing, execution, and luck all play critical roles. Use this tool as one signal among many.</p>
+    </div>
+
+  </div>
+
+  <div class="about-cta">
+    {% if logged_in %}
+    <a href="{{ url_for('dashboard') }}" class="btn btn-primary btn-lg">
+      Go to Dashboard →
+    </a>
+    {% else %}
+    <a href="{{ url_for('register') }}" class="btn btn-primary btn-lg">
+      Get Started Free →
+    </a>
+    {% endif %}
+  </div>
+
+</main>
+<script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
